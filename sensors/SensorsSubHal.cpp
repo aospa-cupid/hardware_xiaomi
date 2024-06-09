@@ -17,6 +17,7 @@
 #include "SensorsSubHal.h"
 
 #include <android/hardware/sensors/2.1/types.h>
+#include <cutils/properties.h>
 #include <log/log.h>
 
 using ::android::hardware::sensors::V2_1::implementation::ISensorsSubHal;
@@ -33,15 +34,15 @@ using ::android::hardware::Void;
 using ::android::hardware::sensors::V2_0::implementation::ScopedWakelock;
 
 SensorsSubHal::SensorsSubHal() : mCallback(nullptr), mNextHandle(1) {
-#ifdef USES_UDFPS_SENSOR
-    AddSensor<UdfpsSensor>();
-#endif
-#ifdef USES_DOUBLE_TAP_SENSOR
-    AddSensor<DoubleTapSensor>();
-#endif
-#ifdef USES_SINGLE_TAP_SENSOR
-    AddSensor<SingleTapSensor>();
-#endif
+    if (property_get_bool("ro.vendor.sensors.xiaomi.udfps", false)) {
+        AddSensor<UdfpsSensor>();
+    }
+    if (property_get_bool("ro.vendor.sensors.xiaomi.single_tap", false)) {
+        AddSensor<SingleTapSensor>();
+    }
+    if (property_get_bool("ro.vendor.sensors.xiaomi.double_tap", false)) {
+        AddSensor<DoubleTapSensor>();
+    }
 }
 
 Return<void> SensorsSubHal::getSensorsList_2_1(ISensors::getSensorsList_2_1_cb _hidl_cb) {
